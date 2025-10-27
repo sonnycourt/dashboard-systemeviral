@@ -1,7 +1,6 @@
-// Fonction pour récupérer les données Google Analytics
-// Property ID: 503555450
-
-const storage = require('./storage.js');
+// Fonction pour récupérer les données Google Analytics depuis la vraie API
+const { BetaAnalyticsDataClient } = require('@google-analytics/data');
+const { GoogleAuth } = require('google-auth-library');
 
 exports.handler = async function(event, context) {
   const headers = {
@@ -20,65 +19,110 @@ exports.handler = async function(event, context) {
   }
 
   try {
-    // Récupérer les événements du tracking
-    const events = storage.getAllEvents();
-    
-    // Calculer les stats basées sur nos événements
-    const totalEvents = events.length;
-    const uniqueSessions = new Set(events.map(e => e.sessionId)).size;
-    
-    // Filtrer les optins
-    const optins = events.filter(e => e.event === 'optin');
-    const optinsCount = optins.length;
-    
-    // Filtrer les purchases
-    const purchases = events.filter(e => e.event === 'purchase');
-    const purchasesCount = purchases.length;
-    
-    // Calculer les conversions par source
-    const sourceStats = {};
-    events.forEach(event => {
-      const source = event.utm_source || 'direct';
-      if (!sourceStats[source]) {
-        sourceStats[source] = { visits: 0, conversions: 0, revenue: 0 };
-      }
-      sourceStats[source].visits++;
-      
-      if (event.event === 'optin') {
-        sourceStats[source].conversions++;
-      }
-      
-      if (event.event === 'purchase' && event.data?.amount) {
-        sourceStats[source].revenue += parseInt(event.data.amount) || 0;
-      }
+    const propertyId = process.env.GA_PROPERTY_ID || '503555450';
+    const clientEmail = process.env.GOOGLE_CLIENT_EMAIL;
+    const privateKey = process.env.GOOGLE_PRIVATE_KEY;
+
+    if (!clientEmail || !privateKey) {
+      console.log('Missing credentials, returning demo data');
+      return {
+        statusCode: 200,
+        headers,
+        body: JSON.stringify({
+          traffic: { total: 0, today: 0, sources: [] },
+          performance: { conversionRate: 0 },
+          realTime: { activeUsers: 0 }
+        })
+      };
+    }
+
+    // Configurer l'authentification
+    const auth = new GoogleAuth({
+      credentials: {
+        client_email: clientEmail,
+        private_key: privateKey.replace(/\\n/g, '\n')
+      },
+      scopes: ['https://www.googleapis.com/auth/analytics.readonly']
     });
+
+    const analyticsDataClient = new BetaAnalyticsDataClient({
+      auth: auth
+    });
+
+    // Obtenir la date d'hier pour avoir des données
+    const now = new Date();
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
     
-    const sources = Object.entries(sourceStats).map(([name, stats]) => ({
-      name: name.charAt(0).toUpperCase() + name.slice(1),
-      visits: stats.visits,
-      conversions: stats.conversions,
-      revenue: stats.revenue
-    }));
-    
-    // Données en temps réel (last 5 minutes)
-    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-    const recentEvents = events.filter(e => 
-      new Date(e.timestamp).getTime() > fiveMinutesAgo
-    );
-    const activeUsers = new Set(recentEvents.map(e => e.sessionId)).size;
-    
+    const startDate = 'yesterday';
+    const endDate = 'today';
+
+    // Récupérer les utilisateurs actifs
+    const [realtimeResponse] = await analyticsDataClient.runRealtimeReport({
+      property: `properties/${propertyId}`,
+      dimensions: [{ name: 'unifiedScreenName' }],
+      metrics: [{ name: 'activeUsers' }],
+      limit: 1
+    });
+
+    const activeUsers = realtimeResponse.rows?.[0]?.metricValues?.[0]?.value || '0';
+
+    // Récupérer les données d'acquisition des 30 derniers jours
+    const [acquisitionResponse] = await analyticsDataClient.runReport({
+      property: `properties/${propertyId}`,
+      dateRanges: [{ startDate: '30daysAgo', endDate: 'today' }],
+      dimensions: [{ name: 'sessionSource' }],
+      metrics: [
+        { name: 'sessions' },
+        { name: 'totalUsers' }
+      ],
+      orderBys: [{ metric: { metricName: 'sessions' }, desc: true }],
+      limit: 5
+    });
+
+    // Récupérer les conversions
+    const [conversionResponse] = await analyticsDataClient.runReport({
+      property: `properties/${propertyId}`,
+      dateRanges: [{ startDate: startDate, endDate: endDate }],
+      metrics: [
+        { name: 'conversions' },
+        { name: 'eventCount' }
+      ]
+    });
+
+    const sources = [];
+    if (acquisitionResponse.rows) {
+      acquisitionResponse.rows.forEach(row => {
+        sources.push({
+          name: row.dimensionValues[0].value || 'direct',
+          visits: parseInt(row.metricValues[0].value) || 0,
+          conversions: 0,
+          revenue: 0
+        });
+      });
+    }
+
+    // Récupérer le total de sessions
+    const [totalResponse] = await analyticsDataClient.runReport({
+      property: `properties/${propertyId}`,
+      dateRanges: [{ startDate: startDate, endDate: endDate }],
+      metrics: [{ name: 'sessions' }]
+    });
+
+    const totalSessions = totalResponse.rows?.[0]?.metricValues?.[0]?.value || '0';
+
     const gaData = {
       traffic: {
-        total: events.length,
-        today: uniqueSessions,
+        total: parseInt(totalSessions),
+        today: parseInt(totalSessions),
         sources: sources
       },
       performance: {
-        conversionRate: optinsCount > 0 ? Math.round((purchasesCount / optinsCount) * 100) : 0,
-        avgSessionDuration: 180 // En secondes (approximation)
+        conversionRate: 0,
+        avgSessionDuration: 0
       },
       realTime: {
-        activeUsers: activeUsers
+        activeUsers: parseInt(activeUsers)
       }
     };
 
@@ -89,11 +133,14 @@ exports.handler = async function(event, context) {
     };
 
   } catch (error) {
-    console.error('Google Analytics data error:', error);
+    console.error('Google Analytics API error:', error.message);
     return {
       statusCode: 500,
       headers,
-      body: JSON.stringify({ error: 'Internal server error', details: error.message })
+      body: JSON.stringify({ 
+        error: 'Error fetching Google Analytics data', 
+        details: error.message 
+      })
     };
   }
 };
