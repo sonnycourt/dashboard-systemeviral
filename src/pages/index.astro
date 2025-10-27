@@ -70,6 +70,34 @@
                 margin-bottom: 30px;
                 border: 1px solid var(--border);
                 box-shadow: 0 10px 40px rgba(0, 220, 130, 0.1);
+                position: relative;
+            }
+            
+            .header-content {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            
+            .logout-btn {
+                background: rgba(0, 220, 130, 0.1);
+                color: var(--accent);
+                border: 1px solid var(--accent);
+                padding: 12px 24px;
+                border-radius: 100px;
+                font-size: 0.9rem;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+            
+            .logout-btn:hover {
+                background: var(--accent);
+                color: var(--bg);
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(0, 220, 130, 0.3);
             }
 
             .header h1 {
@@ -90,6 +118,18 @@
             .header p {
                 color: var(--text-secondary);
                 font-size: 1.1rem;
+            }
+
+            @media (max-width: 768px) {
+                .header-content {
+                    flex-direction: column;
+                    gap: 20px;
+                    align-items: flex-start;
+                }
+                
+                .logout-btn {
+                    width: 100%;
+                }
             }
 
             .stats {
@@ -434,10 +474,13 @@
     <body>
         <div class="container">
             <div class="header">
-                <h1>📊 Dashboard</h1>
-                <p>
-                    Suivez le parcours complet de vos leads et vos performances
-                </p>
+                <div>
+                    <h1>📊 Dashboard</h1>
+                    <p>
+                        Suivez le parcours complet de vos leads et vos performances
+                    </p>
+                </div>
+                <button class="logout-btn" onclick="logout()">Déconnexion</button>
             </div>
 
             <div class="stats" id="stats">
@@ -493,6 +536,29 @@
         </div>
 
         <script is:inline>
+            // Fonction de déconnexion
+            function logout() {
+                sessionStorage.removeItem("dashboard_authenticated");
+                sessionStorage.removeItem("dashboard_auth_time");
+                window.location.href = "/login";
+            }
+
+            // Vérifier l'authentification
+            if (sessionStorage.getItem("dashboard_authenticated") !== "true") {
+                window.location.href = "/login";
+            }
+
+            // Vérifier l'expiration (24h)
+            const authTime = parseInt(sessionStorage.getItem("dashboard_auth_time") || "0");
+            const now = Date.now();
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+
+            if (now - authTime > twentyFourHours) {
+                sessionStorage.removeItem("dashboard_authenticated");
+                sessionStorage.removeItem("dashboard_auth_time");
+                window.location.href = "/login";
+            }
+
             async function loadJourneys() {
                 try {
                     let response = await fetch("/api/journeys");
