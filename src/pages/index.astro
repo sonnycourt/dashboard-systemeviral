@@ -474,16 +474,10 @@
     <body>
         <div class="container">
             <div class="header">
-                <div>
-                    <h1>📊 Dashboard</h1>
-                    <p>
-                        Suivez le parcours complet de vos leads et vos
-                        performances
-                    </p>
-                </div>
-                <button class="logout-btn" onclick="logout()"
-                    >Déconnexion</button
-                >
+                <h1>📊 Dashboard</h1>
+                <p>
+                    Suivez le parcours complet de vos leads et vos performances
+                </p>
             </div>
 
             <div class="stats" id="stats">
@@ -539,30 +533,7 @@
         </div>
 
         <script is:inline>
-            // Fonction de déconnexion
-            function logout() {
-                sessionStorage.removeItem("dashboard_authenticated");
-                sessionStorage.removeItem("dashboard_auth_time");
-                window.location.href = "/login";
-            }
-
-            // Vérifier l'authentification
-            if (sessionStorage.getItem("dashboard_authenticated") !== "true") {
-                window.location.href = "/login";
-            }
-
-            // Vérifier l'expiration (24h)
-            const authTime = parseInt(
-                sessionStorage.getItem("dashboard_auth_time") || "0",
-            );
-            const now = Date.now();
-            const twentyFourHours = 24 * 60 * 60 * 1000;
-
-            if (now - authTime > twentyFourHours) {
-                sessionStorage.removeItem("dashboard_authenticated");
-                sessionStorage.removeItem("dashboard_auth_time");
-                window.location.href = "/login";
-            }
+            // Plus de vérification de session, Netlify gère la protection
 
             async function loadJourneys() {
                 try {
