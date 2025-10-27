@@ -73,6 +73,85 @@
                 position: relative;
             }
 
+            .filters {
+                background: var(--bg-card);
+                padding: 24px;
+                border-radius: 16px;
+                margin-bottom: 30px;
+                border: 1px solid var(--border);
+                display: flex;
+                gap: 16px;
+                align-items: end;
+                flex-wrap: wrap;
+            }
+
+            .filter-group {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                flex: 1;
+                min-width: 200px;
+            }
+
+            .filter-group label {
+                font-size: 0.85rem;
+                color: var(--text-secondary);
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            .filter-group input {
+                padding: 12px 16px;
+                background: rgba(0, 0, 0, 0.3);
+                border: 1px solid var(--border);
+                border-radius: 12px;
+                color: var(--text);
+                font-size: 0.95rem;
+                font-family: inherit;
+                transition: all 0.3s ease;
+            }
+
+            .filter-group input:focus {
+                outline: none;
+                border-color: var(--accent);
+                background: rgba(0, 220, 130, 0.05);
+                box-shadow: 0 0 0 3px rgba(0, 220, 130, 0.1);
+            }
+
+            .filter-btn {
+                background: linear-gradient(135deg, var(--accent) 0%, var(--accent-bright) 100%);
+                color: var(--bg);
+                border: none;
+                padding: 12px 32px;
+                border-radius: 12px;
+                font-weight: 700;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+                box-shadow: 0 4px 15px rgba(0, 220, 130, 0.3);
+            }
+
+            .filter-btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 25px rgba(0, 220, 130, 0.4);
+            }
+
+            .filter-btn:active {
+                transform: translateY(0);
+            }
+
+            @media (max-width: 768px) {
+                .filters {
+                    flex-direction: column;
+                }
+
+                .filter-group {
+                    width: 100%;
+                }
+            }
+
             .header-content {
                 display: flex;
                 justify-content: space-between;
@@ -480,6 +559,18 @@
                 </p>
             </div>
 
+            <div class="filters">
+                <div class="filter-group">
+                    <label for="date-from">Date début</label>
+                    <input type="date" id="date-from" />
+                </div>
+                <div class="filter-group">
+                    <label for="date-to">Date fin</label>
+                    <input type="date" id="date-to" />
+                </div>
+                <button class="filter-btn" onclick="applyFilters()">Appliquer</button>
+            </div>
+
             <div class="stats" id="stats">
                 <div class="stat-card">
                     <h3>Total Leads</h3>
@@ -535,6 +626,33 @@
         <script is:inline>
             // Plus de vérification de session, Netlify gère la protection
 
+            let dateFilter = { from: null, to: null };
+
+            function getDateFilter() {
+                const fromInput = document.getElementById("date-from");
+                const toInput = document.getElementById("date-to");
+                return {
+                    from: fromInput.value || null,
+                    to: toInput.value || null,
+                };
+            }
+
+            function filterJourneysByDate(journeys, from, to) {
+                if (!from && !to) return journeys;
+                
+                return journeys.filter((journey) => {
+                    if (!journey.steps || journey.steps.length === 0) return false;
+                    
+                    // Prendre la date du premier ou dernier step
+                    const journeyDate = new Date(journey.steps[0].timestamp);
+                    
+                    if (from && journeyDate < new Date(from)) return false;
+                    if (to && journeyDate > new Date(to + "T23:59:59")) return false;
+                    
+                    return true;
+                });
+            }
+
             async function loadJourneys() {
                 try {
                     let response = await fetch("/api/journeys");
@@ -544,8 +662,16 @@
                         );
                     }
                     const data = await response.json();
-                    displayJourneys(data.journeys);
-                    updateStats(data.journeys);
+                    
+                    // Appliquer les filtres de date
+                    const filteredJourneys = filterJourneysByDate(
+                        data.journeys,
+                        dateFilter.from,
+                        dateFilter.to
+                    );
+                    
+                    displayJourneys(filteredJourneys);
+                    updateStats(filteredJourneys);
                 } catch (error) {
                     const errorEl = document.getElementById("journeys");
                     if (errorEl) {
@@ -694,6 +820,12 @@
             // Charger au démarrage
             loadJourneys();
             loadGoogleAnalytics();
+
+            // Fonction pour appliquer les filtres
+            function applyFilters() {
+                dateFilter = getDateFilter();
+                loadJourneys();
+            }
 
             // Rafraîchir automatiquement toutes les 30 secondes
             setInterval(loadJourneys, 30000);
