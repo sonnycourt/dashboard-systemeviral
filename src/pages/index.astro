@@ -10,8 +10,16 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Dashboard - Système Viral</title>
         <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-        
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap"
+            rel="stylesheet"
+        />
+
+        <!-- Chart.js pour les graphiques -->
+        <script
+            src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"
+        ></script>
+
         <style>
             :root {
                 --bg: #000000;
@@ -21,13 +29,13 @@
                 --accent: #00dc82;
                 --border: rgba(255, 255, 255, 0.06);
             }
-            
+
             * {
                 margin: 0;
                 padding: 0;
                 box-sizing: border-box;
             }
-            
+
             body {
                 font-family: "Inter", sans-serif;
                 background: var(--bg);
@@ -35,32 +43,32 @@
                 min-height: 100vh;
                 padding: 40px 20px;
             }
-            
+
             .container {
                 max-width: 1200px;
                 margin: 0 auto;
             }
-            
+
             h1 {
                 font-size: 2.5rem;
                 margin-bottom: 40px;
                 text-align: center;
             }
-            
+
             .stats-grid {
                 display: grid;
                 grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
                 gap: 24px;
                 margin-bottom: 40px;
             }
-            
+
             .stat-card {
                 background: var(--bg-card);
                 padding: 32px;
                 border-radius: 16px;
                 border: 1px solid var(--border);
             }
-            
+
             .stat-label {
                 font-size: 0.9rem;
                 color: var(--text-secondary);
@@ -68,14 +76,14 @@
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
             }
-            
+
             .stat-value {
                 font-size: 3rem;
                 font-weight: 800;
                 color: var(--accent);
                 line-height: 1;
             }
-            
+
             .section {
                 background: var(--bg-card);
                 padding: 32px;
@@ -83,30 +91,30 @@
                 border: 1px solid var(--border);
                 margin-bottom: 30px;
             }
-            
+
             .section-title {
                 font-size: 1.5rem;
                 margin-bottom: 24px;
                 color: var(--accent);
             }
-            
+
             .source-item {
                 display: flex;
                 justify-content: space-between;
                 padding: 16px 0;
                 border-bottom: 1px solid var(--border);
             }
-            
+
             .source-item:last-child {
                 border-bottom: none;
             }
-            
+
             .avatar-stats {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
                 gap: 16px;
             }
-            
+
             .avatar-card {
                 text-align: center;
                 padding: 24px;
@@ -114,19 +122,78 @@
                 border: 1px solid rgba(0, 220, 130, 0.2);
                 border-radius: 12px;
             }
-            
+
             .avatar-name {
                 font-size: 0.85rem;
                 color: var(--text-secondary);
                 margin-bottom: 8px;
             }
-            
+
             .avatar-count {
                 font-size: 2rem;
                 font-weight: 800;
                 color: var(--accent);
             }
-            
+
+            .chart-container {
+                width: 100%;
+                max-width: 500px;
+                margin: 0 auto;
+                height: 300px;
+            }
+
+            .utm-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+                gap: 16px;
+                margin-top: 24px;
+            }
+
+            .utm-card {
+                background: rgba(0, 220, 130, 0.05);
+                border: 1px solid rgba(0, 220, 130, 0.2);
+                border-radius: 12px;
+                padding: 24px;
+                text-align: center;
+                transition: all 0.2s;
+            }
+
+            .utm-card:hover {
+                transform: translateY(-2px);
+                border-color: rgba(0, 220, 130, 0.4);
+                box-shadow: 0 4px 20px rgba(0, 220, 130, 0.2);
+            }
+
+            .utm-icon {
+                font-size: 2.5rem;
+                margin-bottom: 12px;
+            }
+
+            .utm-label {
+                font-size: 1rem;
+                font-weight: 600;
+                color: var(--text);
+                margin-bottom: 16px;
+            }
+
+            .utm-button {
+                background: var(--accent);
+                color: var(--bg);
+                border: none;
+                padding: 8px 24px;
+                border-radius: 8px;
+                font-weight: 700;
+                font-size: 0.9rem;
+                cursor: pointer;
+                transition: all 0.2s;
+                width: 100%;
+            }
+
+            .utm-button:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 20px rgba(0, 220, 130, 0.3);
+            }
+
             .filters {
                 background: var(--bg-card);
                 padding: 24px;
@@ -138,7 +205,7 @@
                 align-items: end;
                 flex-wrap: wrap;
             }
-            
+
             .filter-group {
                 display: flex;
                 flex-direction: column;
@@ -146,7 +213,7 @@
                 flex: 1;
                 min-width: 200px;
             }
-            
+
             .filter-group label {
                 font-size: 0.85rem;
                 color: var(--text-secondary);
@@ -154,7 +221,7 @@
                 text-transform: uppercase;
                 letter-spacing: 0.5px;
             }
-            
+
             .filter-group input {
                 background: rgba(255, 255, 255, 0.05);
                 border: 1px solid var(--border);
@@ -163,7 +230,7 @@
                 color: var(--text);
                 font-size: 0.95rem;
             }
-            
+
             .filter-btn {
                 background: var(--accent);
                 color: var(--bg);
@@ -175,18 +242,18 @@
                 cursor: pointer;
                 transition: all 0.2s;
             }
-            
+
             .filter-btn:hover {
                 transform: translateY(-2px);
                 box-shadow: 0 4px 20px rgba(0, 220, 130, 0.3);
             }
-            
+
             .loading {
                 text-align: center;
                 padding: 40px;
                 color: var(--text-secondary);
             }
-            
+
             .error {
                 background: rgba(255, 68, 68, 0.1);
                 border: 1px solid rgba(255, 68, 68, 0.3);
@@ -196,11 +263,11 @@
             }
         </style>
     </head>
-    
+
     <body>
         <div class="container">
             <h1>📊 Dashboard Système Viral</h1>
-            
+
             <div class="filters">
                 <div class="filter-group">
                     <label for="date-from">Date début</label>
@@ -210,25 +277,92 @@
                     <label for="date-to">Date fin</label>
                     <input type="date" id="date-to" />
                 </div>
-                <button class="filter-btn" onclick="applyFilters()">Appliquer</button>
+                <button class="filter-btn" onclick="applyFilters()"
+                    >Appliquer</button
+                >
             </div>
-            
+
             <div id="stats-container">
                 <div class="loading">Chargement...</div>
             </div>
-            
+
             <div id="sources-container">
                 <div class="loading">Chargement des sources...</div>
             </div>
-            
+
             <div id="avatars-container">
                 <div class="loading">Chargement des avatars...</div>
             </div>
+
+            <div id="utm-links-container">
+                <div class="section">
+                    <h2 class="section-title">📋 Liens UTM Prêts à Utiliser</h2>
+                    <p
+                        style="text-align: center; color: var(--text-secondary); margin-bottom: 24px;"
+                    >
+                        Copie ces liens pour tes partages sur les réseaux
+                        sociaux
+                    </p>
+                    <div class="utm-grid">
+                        <div class="utm-card">
+                            <div class="utm-icon">🎵</div>
+                            <div class="utm-label">TikTok</div>
+                            <button
+                                class="utm-button"
+                                onclick="copyLink('https://systemeviral.com/?utm_source=tiktok&utm_medium=social&utm_campaign=système_viral')"
+                                >Copier</button
+                            >
+                        </div>
+                        <div class="utm-card">
+                            <div class="utm-icon">📺</div>
+                            <div class="utm-label">YouTube</div>
+                            <button
+                                class="utm-button"
+                                onclick="copyLink('https://systemeviral.com/?utm_source=youtube&utm_medium=social&utm_campaign=système_viral')"
+                                >Copier</button
+                            >
+                        </div>
+                        <div class="utm-card">
+                            <div class="utm-icon">📸</div>
+                            <div class="utm-label">Instagram</div>
+                            <button
+                                class="utm-button"
+                                onclick="copyLink('https://systemeviral.com/?utm_source=instagram&utm_medium=social&utm_campaign=système_viral')"
+                                >Copier</button
+                            >
+                        </div>
+                        <div class="utm-card">
+                            <div class="utm-icon">👥</div>
+                            <div class="utm-label">Facebook</div>
+                            <button
+                                class="utm-button"
+                                onclick="copyLink('https://systemeviral.com/?utm_source=facebook&utm_medium=social&utm_campaign=système_viral')"
+                                >Copier</button
+                            >
+                        </div>
+                        <div class="utm-card">
+                            <div class="utm-icon">📧</div>
+                            <div class="utm-label">Email</div>
+                            <button
+                                class="utm-button"
+                                onclick="copyLink('https://systemeviral.com/?utm_source=email&utm_medium=email&utm_campaign=système_viral')"
+                                >Copier</button
+                            >
+                        </div>
+                    </div>
+                    <div
+                        id="copy-success"
+                        style="display: none; text-align: center; margin-top: 16px; padding: 12px; background: rgba(0, 220, 130, 0.1); border: 1px solid rgba(0, 220, 130, 0.3); border-radius: 8px; color: var(--accent);"
+                    >
+                        ✓ Lien copié dans le presse-papiers !
+                    </div>
+                </div>
+            </div>
         </div>
-        
+
         <script>
             let dateFilter = { from: null, to: null };
-            
+
             function getDateFilter() {
                 const fromInput = document.getElementById("date-from");
                 const toInput = document.getElementById("date-to");
@@ -237,44 +371,54 @@
                     to: toInput.value || null,
                 };
             }
-            
+
             function filterByDate(data, from, to) {
                 if (!from && !to) return data;
-                
+
                 const fromDate = from ? new Date(from) : null;
                 const toDate = to ? new Date(to + "T23:59:59") : null;
-                
-                return data.filter(item => {
+
+                return data.filter((item) => {
                     const itemDate = new Date(item.timestamp);
                     if (fromDate && itemDate < fromDate) return false;
                     if (toDate && itemDate > toDate) return false;
                     return true;
                 });
             }
-            
+
             async function loadData() {
                 try {
-                    const response = await fetch("/.netlify/functions/get-journeys");
+                    const response = await fetch(
+                        "/.netlify/functions/get-journeys",
+                    );
                     const data = await response.json();
-                    
-                    const allEvents = data.journeys.flatMap(j => j.steps || []);
-                    const filteredEvents = filterByDate(allEvents, dateFilter.from, dateFilter.to);
-                    
+
+                    const allEvents = data.journeys.flatMap(
+                        (j) => j.steps || [],
+                    );
+                    const filteredEvents = filterByDate(
+                        allEvents,
+                        dateFilter.from,
+                        dateFilter.to,
+                    );
+
                     displayStats(filteredEvents);
                     displaySources(filteredEvents);
                     displayAvatars(filteredEvents);
-                    
                 } catch (error) {
-                    document.getElementById("stats-container").innerHTML = 
+                    document.getElementById("stats-container").innerHTML =
                         `<div class="error">Erreur: ${error.message}</div>`;
                 }
             }
-            
+
             function displayStats(events) {
                 const totalVisits = events.length;
-                const optins = events.filter(e => e.event === 'optin');
-                const optinRate = totalVisits > 0 ? ((optins.length / totalVisits) * 100).toFixed(1) : 0;
-                
+                const optins = events.filter((e) => e.event === "optin");
+                const optinRate =
+                    totalVisits > 0
+                        ? ((optins.length / totalVisits) * 100).toFixed(1)
+                        : 0;
+
                 document.getElementById("stats-container").innerHTML = `
                     <div class="stats-grid">
                         <div class="stat-card">
@@ -292,80 +436,307 @@
                     </div>
                 `;
             }
-            
+
+            let sourcesChart = null;
+
             function displaySources(events) {
                 const sources = {};
-                
-                events.forEach(event => {
-                    const source = event.utm_source || 'direct';
+
+                events.forEach((event) => {
+                    const source = event.utm_source || "direct";
                     if (!sources[source]) {
                         sources[source] = 0;
                     }
                     sources[source]++;
                 });
-                
+
                 const sourcesArray = Object.entries(sources)
                     .sort((a, b) => b[1] - a[1])
                     .map(([name, count]) => ({ name, count }));
-                
+
                 document.getElementById("sources-container").innerHTML = `
                     <div class="section">
                         <h2 class="section-title">Sources de Trafic (UTM)</h2>
-                        ${sourcesArray.map(s => `
-                            <div class="source-item">
-                                <span>${s.name}</span>
-                                <span style="color: var(--accent); font-weight: 700;">${s.count}</span>
-                            </div>
-                        `).join('')}
+                        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 24px;">
+                            Répartition des visiteurs par réseau social
+                        </p>
+                        <div class="chart-container">
+                            <canvas id="sourcesChart"></canvas>
+                        </div>
                     </div>
                 `;
+
+                // Créer le graphique en barres
+                setTimeout(() => {
+                    const ctx = document.getElementById("sourcesChart");
+                    if (ctx) {
+                        // Détruire le graphique précédent s'il existe
+                        if (sourcesChart) {
+                            sourcesChart.destroy();
+                        }
+
+                        sourcesChart = new Chart(ctx, {
+                            type: "bar",
+                            data: {
+                                labels: sourcesArray.map((s) => s.name),
+                                datasets: [
+                                    {
+                                        label: "Nombre de visiteurs",
+                                        data: sourcesArray.map((s) => s.count),
+                                        backgroundColor: [
+                                            "rgba(0, 220, 130, 0.8)",
+                                            "rgba(0, 245, 142, 0.8)",
+                                            "rgba(0, 255, 148, 0.8)",
+                                            "rgba(0, 200, 120, 0.8)",
+                                            "rgba(0, 230, 135, 0.8)",
+                                        ],
+                                        borderColor: [
+                                            "#00dc82",
+                                            "#00f58e",
+                                            "#00ff94",
+                                            "#00c878",
+                                            "#00e687",
+                                        ],
+                                        borderWidth: 2,
+                                        borderRadius: 8,
+                                    },
+                                ],
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false,
+                                    },
+                                    tooltip: {
+                                        backgroundColor:
+                                            "rgba(10, 10, 10, 0.95)",
+                                        titleColor: "#ffffff",
+                                        bodyColor: "#00dc82",
+                                        borderColor: "#00dc82",
+                                        borderWidth: 1,
+                                        padding: 12,
+                                        displayColors: true,
+                                        callbacks: {
+                                            label: function (context) {
+                                                return (
+                                                    "Visiteurs: " +
+                                                    context.parsed.y
+                                                );
+                                            },
+                                        },
+                                    },
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            color: "#ffffff",
+                                            font: {
+                                                family: "Inter",
+                                                size: 12,
+                                            },
+                                        },
+                                        grid: {
+                                            color: "rgba(255, 255, 255, 0.06)",
+                                        },
+                                    },
+                                    x: {
+                                        ticks: {
+                                            color: "#ffffff",
+                                            font: {
+                                                family: "Inter",
+                                                size: 12,
+                                            },
+                                        },
+                                        grid: {
+                                            display: false,
+                                        },
+                                    },
+                                },
+                            },
+                        });
+                    }
+                }, 100);
             }
-            
+
+            let avatarChart = null;
+
             function displayAvatars(events) {
                 const avatars = {
-                    'employe-frustre': 0,
-                    'influenceur-fauche': 0,
-                    'entrepreneur-invisible': 0
+                    "employe-frustre": 0,
+                    "influenceur-fauche": 0,
+                    "entrepreneur-invisible": 0,
                 };
-                
-                events.filter(e => e.event === 'avatar_click').forEach(event => {
-                    const avatar = event.data?.avatar;
-                    if (avatar && avatars[avatar]) {
-                        avatars[avatar]++;
-                    }
-                });
-                
+
+                events
+                    .filter((e) => e.event === "avatar_click")
+                    .forEach((event) => {
+                        const avatar = event.data?.avatar;
+                        if (avatar && avatars[avatar]) {
+                            avatars[avatar]++;
+                        }
+                    });
+
+                const totalClicks = Object.values(avatars).reduce(
+                    (a, b) => a + b,
+                    0,
+                );
+
+                // Noms français pour les avatars
+                const avatarNames = {
+                    "employe-frustre": "Employé frustré",
+                    "influenceur-fauche": "Influenceur fauché",
+                    "entrepreneur-invisible": "Entrepreneur invisible",
+                };
+
                 document.getElementById("avatars-container").innerHTML = `
                     <div class="section">
                         <h2 class="section-title">Proportion des 3 Avatars</h2>
-                        <div class="avatar-stats">
+                        <p style="text-align: center; color: var(--text-secondary); margin-bottom: 24px;">
+                            Total clics: ${totalClicks}
+                        </p>
+                        <div class="chart-container">
+                            <canvas id="avatarChart"></canvas>
+                        </div>
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 24px;">
                             <div class="avatar-card">
-                                <div class="avatar-name">Employé frustré</div>
-                                <div class="avatar-count">${avatars['employe-frustre']}</div>
+                                <div class="avatar-name">${avatarNames["employe-frustre"]}</div>
+                                <div class="avatar-count">${avatars["employe-frustre"]}</div>
                             </div>
                             <div class="avatar-card">
-                                <div class="avatar-name">Influenceur fauché</div>
-                                <div class="avatar-count">${avatars['influenceur-fauche']}</div>
+                                <div class="avatar-name">${avatarNames["influenceur-fauche"]}</div>
+                                <div class="avatar-count">${avatars["influenceur-fauche"]}</div>
                             </div>
                             <div class="avatar-card">
-                                <div class="avatar-name">Entrepreneur invisible</div>
-                                <div class="avatar-count">${avatars['entrepreneur-invisible']}</div>
+                                <div class="avatar-name">${avatarNames["entrepreneur-invisible"]}</div>
+                                <div class="avatar-count">${avatars["entrepreneur-invisible"]}</div>
                             </div>
                         </div>
                     </div>
                 `;
+
+                // Créer le graphique en camembert
+                setTimeout(() => {
+                    const ctx = document.getElementById("avatarChart");
+                    if (ctx) {
+                        // Détruire le graphique précédent s'il existe
+                        if (avatarChart) {
+                            avatarChart.destroy();
+                        }
+
+                        avatarChart = new Chart(ctx, {
+                            type: "pie",
+                            data: {
+                                labels: [
+                                    avatarNames["employe-frustre"],
+                                    avatarNames["influenceur-fauche"],
+                                    avatarNames["entrepreneur-invisible"],
+                                ],
+                                datasets: [
+                                    {
+                                        data: [
+                                            avatars["employe-frustre"],
+                                            avatars["influenceur-fauche"],
+                                            avatars["entrepreneur-invisible"],
+                                        ],
+                                        backgroundColor: [
+                                            "rgba(0, 220, 130, 0.8)",
+                                            "rgba(0, 245, 142, 0.8)",
+                                            "rgba(0, 255, 148, 0.8)",
+                                        ],
+                                        borderColor: [
+                                            "#00dc82",
+                                            "#00f58e",
+                                            "#00ff94",
+                                        ],
+                                        borderWidth: 2,
+                                    },
+                                ],
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: "bottom",
+                                        labels: {
+                                            color: "#ffffff",
+                                            font: {
+                                                family: "Inter",
+                                                size: 12,
+                                            },
+                                            padding: 15,
+                                        },
+                                    },
+                                    tooltip: {
+                                        backgroundColor:
+                                            "rgba(10, 10, 10, 0.95)",
+                                        titleColor: "#ffffff",
+                                        bodyColor: "#00dc82",
+                                        borderColor: "#00dc82",
+                                        borderWidth: 1,
+                                        padding: 12,
+                                        displayColors: true,
+                                        callbacks: {
+                                            label: function (context) {
+                                                const total =
+                                                    context.dataset.data.reduce(
+                                                        (a, b) => a + b,
+                                                        0,
+                                                    );
+                                                const percentage = (
+                                                    (context.parsed / total) *
+                                                    100
+                                                ).toFixed(1);
+                                                return (
+                                                    context.label +
+                                                    ": " +
+                                                    context.parsed +
+                                                    " (" +
+                                                    percentage +
+                                                    "%)"
+                                                );
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        });
+                    }
+                }, 100);
             }
-            
+
             function applyFilters() {
                 dateFilter = getDateFilter();
                 loadData();
             }
-            
+
             // Charger au démarrage
             loadData();
-            
+
             // Recharger toutes les 10 secondes
             setInterval(loadData, 10000);
+
+            // Fonction pour copier les liens UTM
+            async function copyLink(url) {
+                try {
+                    await navigator.clipboard.writeText(url);
+
+                    // Afficher le message de succès
+                    const successMsg = document.getElementById("copy-success");
+                    successMsg.style.display = "block";
+
+                    // Masquer après 3 secondes
+                    setTimeout(() => {
+                        successMsg.style.display = "none";
+                    }, 3000);
+                } catch (err) {
+                    console.error("Erreur lors de la copie:", err);
+                    alert("Erreur lors de la copie. Lien: " + url);
+                }
+            }
         </script>
     </body>
 </html>
