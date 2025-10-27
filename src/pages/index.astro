@@ -387,12 +387,14 @@
                 try {
                     // Essayer d'abord la route API Astro (pour dev local)
                     let response = await fetch("/api/journeys");
-                    
+
                     // Si ça échoue, essayer les Netlify Functions
                     if (!response.ok) {
-                        response = await fetch("/.netlify/functions/get-journeys");
+                        response = await fetch(
+                            "/.netlify/functions/get-journeys",
+                        );
                     }
-                    
+
                     const data = await response.json();
 
                     const allEvents = data.journeys.flatMap(
