@@ -577,7 +577,7 @@
                 events
                     .filter((e) => e.event === "avatar_click")
                     .forEach((event) => {
-                        const avatar = event.data?.avatar;
+                        const avatar = event.data?.avatar || event.avatar;
                         if (avatar && avatars[avatar]) {
                             avatars[avatar]++;
                         }
