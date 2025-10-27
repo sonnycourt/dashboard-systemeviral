@@ -120,7 +120,11 @@
             }
 
             .filter-btn {
-                background: linear-gradient(135deg, var(--accent) 0%, var(--accent-bright) 100%);
+                background: linear-gradient(
+                    135deg,
+                    var(--accent) 0%,
+                    var(--accent-bright) 100%
+                );
                 color: var(--bg);
                 border: none;
                 padding: 12px 32px;
@@ -568,7 +572,9 @@
                     <label for="date-to">Date fin</label>
                     <input type="date" id="date-to" />
                 </div>
-                <button class="filter-btn" onclick="applyFilters()">Appliquer</button>
+                <button class="filter-btn" onclick="applyFilters()"
+                    >Appliquer</button
+                >
             </div>
 
             <div class="stats" id="stats">
@@ -639,16 +645,18 @@
 
             function filterJourneysByDate(journeys, from, to) {
                 if (!from && !to) return journeys;
-                
+
                 return journeys.filter((journey) => {
-                    if (!journey.steps || journey.steps.length === 0) return false;
-                    
+                    if (!journey.steps || journey.steps.length === 0)
+                        return false;
+
                     // Prendre la date du premier ou dernier step
                     const journeyDate = new Date(journey.steps[0].timestamp);
-                    
+
                     if (from && journeyDate < new Date(from)) return false;
-                    if (to && journeyDate > new Date(to + "T23:59:59")) return false;
-                    
+                    if (to && journeyDate > new Date(to + "T23:59:59"))
+                        return false;
+
                     return true;
                 });
             }
@@ -662,14 +670,14 @@
                         );
                     }
                     const data = await response.json();
-                    
+
                     // Appliquer les filtres de date
                     const filteredJourneys = filterJourneysByDate(
                         data.journeys,
                         dateFilter.from,
-                        dateFilter.to
+                        dateFilter.to,
                     );
-                    
+
                     displayJourneys(filteredJourneys);
                     updateStats(filteredJourneys);
                 } catch (error) {
