@@ -24,7 +24,9 @@ export async function GET() {
           utm_source: 'tiktok',
           utm_medium: 'social',
           utm_campaign: 'système_viral',
-          avatar: 'employe-frustre'
+          data: {
+            avatar: 'employe-frustre'
+          }
         }
       ]
     },
@@ -50,7 +52,9 @@ export async function GET() {
           utm_source: 'instagram',
           utm_medium: 'social',
           utm_campaign: 'système_viral',
-          avatar: 'influenceur-fauche'
+          data: {
+            avatar: 'influenceur-fauche'
+          }
         },
         {
           event: 'optin',
